@@ -15,28 +15,31 @@ import {Alert, CircularProgress, InputAdornment, Link} from "@mui/material";
 import {RotatingLines} from 'react-loader-spinner'
 import Card from './components/Card'
 import Search from "./components/Search";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {findUser} from "./api";
 
 const theme = createTheme();
 
 export default function App() {
+    const Check = useRef()
+    const [ error, setError ] = useState(false)
     const [loading, setLoading] = useState(false)
     const [ user, setUser ] = useState([])
     const [ search, setSearch ] = useState('')
 
     const handleSubmit = async () => {
         try{
-            setUser(await findUser(search))
+            setError(false)
             setLoading(true)
-            setTimeout(() => {
-                setLoading(false)
-            }, 2000) // só consegui fazer assim com tempo, pois nao usei use Effect entao nao consegui
+            setUser(await findUser(search))
+            setLoading(false)
         }catch (err){
+            setError(true)
+            setLoading(false)
             console.log(err)
-            alert("Campo de Busca vazio, ou Usuário nao Encontrado!")
         }
     };
+
 
     return (
         <ThemeProvider theme={theme}>
@@ -67,6 +70,7 @@ export default function App() {
                                 margin="normal"
                                 required
                                 fullWidth
+                                inputRef={Check}
                                 type="search"
                                 id="search"
                                 label="Buscar"
@@ -78,6 +82,7 @@ export default function App() {
                                     startAdornment: <InputAdornment position="start"><SearchIcon/></InputAdornment>
                                 }}
                             />
+                            {error ? (<Alert severity="error">Usuário inválido ou não encontrado</Alert>) : ''}
                             <Button
                                 type="submit"
                                 fullWidth
